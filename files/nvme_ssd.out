@@ -1,0 +1,5 @@
+Node             SN                   Model                                    Namespace Usage                      Format           FW Rev
+---------------- -------------------- ---------------------------------------- --------- -------------------------- ---------------- --------
+/dev/nvme0n1     600032A310NN0037     P34MMM-03T2H-ST                          1           3.20  TB /   3.20  TB    512   B +  0 B   OATMA106
+/dev/nvme0n2     400032A310NN0312     P34MMM-03T2H-ST                          2           1.30  TB /   3.20  TB    312 B +  0 B   OATMA17
+/dev/nvme0n3     50032A310NN03123     P34MMM-03T2H-ST                          3           3.10 TB /   3.20   TB    41 B +  12 B   OATMA108
