@@ -34,8 +34,6 @@ class BaseClient(object):
     def __init__(self):
         self.api = settings.API
         self.task_api = settings.TASK_API
-        self.stask_api = settings.STASK_API
-        self.file_api = settings.FILE_API
         self.api_token = settings.API_TOKEN
         self.task_res_path = os.path.join(settings.BASEDIR,'task_handler/res/res.json')
         # 获取主机名
@@ -90,23 +88,15 @@ class AgentClient(BaseClient):
         cert_path = os.path.join(settings.BASEDIR,'conf','cert.txt')
 
         f = open(cert_path,mode='r')
-        old_hostname = f.read()
+        cert_id = f.read()
         f.close()
 
-        if not old_hostname:
-            """第一次运行"""
+        if not cert_id:
+            """第一次运行,生成唯一标示"""
+            cert_id = str(uuid.uuid1())
             with open(cert_path,mode='w') as ff:
-                ff.write(new_hostname)
-            server_dict['type'] = 'create'
-        else:
-            if new_hostname == old_hostname:
-                server_dict['type'] = 'update'
-            else:
-                server_dict['type'] = 'host_update'
-                server_dict['cert'] = old_hostname
-                # server_dict['basic']['data']['hostname'] = old_hostname
-                with open(cert_path,'w') as f:
-                    f.write(new_hostname)
+                ff.write(str(cert_id))
+        server_dict['cert'] = cert_id
         print_info = '[%s]POST %s to server'%(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),'[ client info ]')
         print(print_info)
         logger.info(print_info)
