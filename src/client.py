@@ -9,7 +9,7 @@ from multiprocessing import Process,Pool
 from lib.log import logger
 import json
 import os
-import copy_reg
+# import copy_reg
 import types
 import hashlib
 import time
@@ -20,13 +20,13 @@ import copy
 import importlib
 import traceback
 
-def _pickle_method(m):
-    if m.im_self is None:
-        return getattr,(m.im_class,m.im_func.func_name)
-    else:
-        return getattr,(m.im_self,m.im_func.func_name)
-    
-copy_reg.pickle(types.MethodType,_pickle_method)
+# def _pickle_method(m):
+#     if m.im_self is None:
+#         return getattr,(m.im_class,m.im_func.func_name)
+#     else:
+#         return getattr,(m.im_self,m.im_func.func_name)
+#
+# copy_reg.pickle(types.MethodType,_pickle_method)
 
 
 
@@ -37,11 +37,11 @@ class BaseClient(object):
         self.api_token = settings.API_TOKEN
         self.task_res_path = os.path.join(settings.BASEDIR,'task_handler/res/res.json')
         # 获取主机名
-        cert_path = os.path.join(settings.BASEDIR, 'conf', 'cert.txt')
-        f = open(cert_path, mode='r')
-        hostname = f.read()
-        f.close()
-        self.hostname = hostname
+        # cert_path = os.path.join(settings.BASEDIR, 'conf', 'cert.txt')
+        # f = open(cert_path, mode='r')
+        # hostname = f.read()
+        # f.close()
+        # self.hostname = hostname
 
     def post_server_info(self,server_dict):
         # requests.post(self.api,data=server_dict) # 1. k=v&k=v,   2.  content-type:   application/x-www-form-urlencoded
@@ -50,17 +50,17 @@ class BaseClient(object):
             # 1. 字典序列化；2. 带请求头 content-type:   application/json
             rep = json.loads(response.text)
             return rep
-        except requests.ConnectionError,e :
+        except requests.ConnectionError as e :
             msg = traceback.format_exc()
             rep = { 'code': 3, 'msg':msg}
             logger.error(msg)
-            print rep
+            print (rep)
             return rep
-        except ValueError,e :
+        except ValueError as e :
             msg = traceback.format_exc()
             rep = { 'code': 3, 'msg':msg}
             logger.error(msg)
-            print rep
+            print (rep)
             return rep
 
     @property
@@ -104,7 +104,36 @@ class AgentClient(BaseClient):
         rep = self.post_server_info(server_dict)
 
     def check_task(self):
-        pass
+        from task_handler.progress import get_res
+        task_res = {'cert_id':'','task_res':{}}
+        task_res['task_res'] = get_res()
+        cert_path = os.path.join(settings.BASEDIR, 'conf', 'cert.txt')
+        f = open(cert_path,mode='r')
+        cert_id = f.read()
+        f.close()
+        task_res['cert_id'] = cert_id
+
+
+        print_info = '[%s]POST Task_res:%s to server' % (
+        datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), task_res)
+        logger.info(print_info)
+        print(print_info)
+        try:
+            response = requests.post(self.task_api, json=task_res, headers={'auth-token': self.auth_header_val})
+            rep = json.loads(response.text)
+            return rep
+        except requests.ConnectionError as e:
+            msg = traceback.format_exc()
+            logger.error(msg)
+            rep = {'code': 3, 'msg': msg}
+            print (rep)
+            return rep
+        except ValueError as e:
+            msg = traceback.format_exc()
+            logger.error(msg)
+            rep = {'code': 3, 'msg': msg}
+            print (rep)
+            return rep
 
 
 class SaltSshClient(BaseClient):

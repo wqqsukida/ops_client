@@ -46,9 +46,13 @@ class Nvme_ssd(BasePlugin):
         :return:
         '''
         response = {}
-        import commands
         nvme_path = os.path.join(settings.NVME_TOOL_PATH, 'nvme')
+        # py2
+        import commands
         output = commands.getoutput("sudo {0} smart-log {1}".format(nvme_path,device))
+        #py3
+        # import subprocess
+        # output = subprocess.getoutput("sudo {0} smart-log {1}".format(nvme_path,device))
         for row_line in output.split('\n')[1:]:
             k = row_line.split(":")[0].strip().replace(' ','_').lower()
             response[k] = row_line.split(":")[1].strip()
