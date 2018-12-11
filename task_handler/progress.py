@@ -23,14 +23,11 @@ res = {
 '''
 
 def get_res():
-    f = open('/home/wuyifei/ops_pro/ops_client/task_handler/res','r')
-    status = f.read()
-    f.close()
     res = {
         "name": "test.py",
         "path": "/tmp/test.py",
         "args": "-t 10 -d 4",
-        "status": status,
+        "status": 0,
         "msg": "some desc",
         "elapsed": 40
                }

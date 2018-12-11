@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-
+import sys
 import importlib
 import requests
 import traceback
@@ -63,11 +63,13 @@ class PluginManager(object):
     def exec_cmd(self,cmd):
         if self.mode == "AGENT":
             # py3
-            # import subprocess
-            # result = subprocess.getoutput(cmd)
+            if sys.version_info.major == 3 :
+                import subprocess
+                result = subprocess.getoutput(cmd)
+            else :
             # py2
-            import commands
-            result = commands.getoutput(cmd)
+                import commands
+                result = commands.getoutput(cmd)
         elif self.mode == "SSH":
             import paramiko
             ssh = paramiko.SSHClient()

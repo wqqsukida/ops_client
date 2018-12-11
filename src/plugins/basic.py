@@ -23,8 +23,8 @@ class Basic(BasePlugin):
             }
         else:
             output = {
-                'os_platform': cmd_func("uname").strip(),
-                'os_version': cmd_func("cat /etc/issue").strip().split('\n')[0],
+                'os_platform': '-'.join(platform.linux_distribution()[0:2]),#cmd_func("uname").strip(),
+                'os_version': platform.linux_distribution()[1],#cmd_func("cat /etc/issue").strip().split('\n')[0],
                 'hostname': cmd_func("hostname").strip(),
                 'cpu_physical_count' : cmd_func("sudo cat /proc/cpuinfo | grep 'physical id' | sort | uniq | wc -l"),
                 'cpu_count' : cmd_func("sudo cat /proc/cpuinfo | grep 'processor' | wc -l"),

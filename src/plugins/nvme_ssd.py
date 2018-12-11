@@ -2,6 +2,7 @@
 from .base import BasePlugin
 import time
 import os,re
+import sys
 from lib.config import settings
 
 class Nvme_ssd(BasePlugin):
@@ -47,16 +48,18 @@ class Nvme_ssd(BasePlugin):
         '''
         response = {}
         nvme_path = os.path.join(settings.NVME_TOOL_PATH, 'nvme')
+        if sys.version_info.major == 2 :
         # py2
-        import commands
-        output = commands.getoutput("sudo {0} smart-log {1}".format(nvme_path,device))
-        #py3
-        # import subprocess
-        # output = subprocess.getoutput("sudo {0} smart-log {1}".format(nvme_path,device))
+            import commands
+            output = commands.getoutput("sudo {0} smart-log {1}".format(nvme_path,device))
+        # py3
+        else:
+            import subprocess
+            output = subprocess.getoutput("sudo {0} smart-log {1}".format(nvme_path,device))
         for row_line in output.split('\n')[1:]:
-            k = row_line.split(":")[0].strip().replace(' ','_').lower()
+            k = row_line.split(":")[0].strip() # .replace(' ','_').lower()
             response[k] = row_line.split(":")[1].strip()
-        # print(response)
+
         if task_id:
             return {'task_id':task_id,'task_res':response}
         else:
