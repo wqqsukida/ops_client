@@ -8,7 +8,7 @@ class Board(BasePlugin):
         if test:
             output = open(os.path.join(settings.BASEDIR, 'files/board.out'), 'r').read()
         else:
-            output = cmd_func("sudo dmidecode -t1")
+            output = cmd_func("sudo dmidecode -t2")
         return self.parse(output)
 
     def parse(self, content):
