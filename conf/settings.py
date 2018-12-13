@@ -30,4 +30,4 @@ NVME_TOOL_PATH = os.path.join(BASEDIR,'nvme_tool')
 
 CLIENT_VERSION = "v1.0.7"
 
-LOG_FILE_PATH = os.path.join(BASEDIR,'log','cmdb.log')
+LOG_FILE_PATH = os.path.join(BASEDIR,'log')

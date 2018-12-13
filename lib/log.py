@@ -10,11 +10,14 @@ from lib.config import settings
 class Logger(object):
     def __init__(self):
         self.log_file_path = settings.LOG_FILE_PATH
-        if not self.log_file_path:
-            # os.makedirs()
-            f = open(self.log_file_path,'w')
+        self.log_file = os.path.join(self.log_file_path,'cmdb.log')
+
+        if not os.path.exists(self.log_file):
+            os.makedirs(self.log_file_path)
+            f = open(self.log_file,'w')
             f.close()
-        file_handler = logging.FileHandler(self.log_file_path, 'a', encoding='utf-8')
+
+        file_handler = logging.FileHandler(self.log_file, 'a', encoding='utf-8')
         file_handler.setFormatter(logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s:  %(message)s"))
 
         self.logger = logging.Logger('cmdb', level=logging.INFO)
