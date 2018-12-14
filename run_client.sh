@@ -2,7 +2,7 @@
  
 #这里可替换为你自己的执行程序，其他代码无需更改
  
-APP_NAME=/opt/ops_client/bin/run.py
+APP_NAME=/opt/dera_ops_client/bin/run.py
 #使用说明，用来提示输入参数
 usage() {
     echo "Usage: sh shell-eureka-service.sh [start|stop|restart|status]"

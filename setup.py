@@ -6,7 +6,7 @@
 import sys
 import os
 
-CLIENT_DIR = '/opt/ops_client'
+CLIENT_DIR = '/opt/dera_ops_client'
 
 
 def setup():
@@ -23,9 +23,9 @@ def setup():
         print('\033[1;31;40m 找不到pip命令,请先安装pip!\033[0m')
         sys.exit(1)
 
-    step2 = os.system("grep 'sh /opt/ops_client/run_client.sh start' /etc/rc.d/rc.local")
+    step2 = os.system("grep 'sh /opt/dera_ops_client/run_client.sh start' /etc/rc.d/rc.local")
     if step2 != 0:
-        step3 = os.system("sed -i '$a\sh /opt/ops_client/run_client.sh start' /etc/rc.d/rc.local & chmod +x /etc/rc.d/rc.local")
+        step3 = os.system("sed -i '$a\sh /opt/dera_ops_client/run_client.sh start' /etc/rc.d/rc.local & chmod +x /etc/rc.d/rc.local")
         if step3 != 0:
             print('\033[1;31;40m 设置开机启动失败,请手动将启动脚本添加到rc.local下!\033[0m')
 
