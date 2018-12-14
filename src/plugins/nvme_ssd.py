@@ -25,7 +25,7 @@ class Nvme_ssd(BasePlugin):
 
         name_list = ['node','sn','model','namespace','usage','format','fw_rev']
         for row_line in content.split("\n")[2:]:
-            usage_val = re.search('(\d+\.\d+\s*TB\s*/\s*\d+\.\d+\s*TB)', row_line)
+            usage_val = re.search('(\d+\.\d+\s*[GT]B\s*/\s*\d+\.\d+\s*[GT]B)', row_line)
             format_val = re.search('\d+\s*B\s*\+\s*\d+\s*B', row_line)
             val_list =re.split('\s{2,}',row_line)[0:4]
             if usage_val and format_val:
