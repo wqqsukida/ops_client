@@ -5,7 +5,7 @@
 APP_NAME=/opt/dera_ops_client/bin/run.py
 #使用说明，用来提示输入参数
 usage() {
-    echo "Usage: sh shell-eureka-service.sh [start|stop|restart|status]"
+    echo "Usage: sh run_client.sh [start|stop|restart|status|enable|disable]"
     exit 1
 }
  
@@ -26,7 +26,7 @@ start(){
   if [ $? -eq 0 ]; then
     echo "${APP_NAME} is already running. pid=${pid}"
   else
-    nohup python ${APP_NAME}  >shell-eureka-service.out 2>&1 &
+    nohup python ${APP_NAME}  >run_client.out 2>&1 &
   fi
 }
  
@@ -56,6 +56,23 @@ restart(){
   sleep 5
   start
 }
+
+#添加开机启动
+enable(){
+  grep 'sh /opt/dera_ops_client/run_client.sh start' /etc/rc.d/rc.local > /dev/null
+  if [ $? -eq "0" ];then
+    echo "${APP_NAME} in already in rc.local."
+  else
+    sed -i '$a\sh /opt/dera_ops_client/run_client.sh start' /etc/rc.d/rc.local
+    chmod +x /etc/rc.d/rc.local
+  fi
+}
+
+#禁用开机启动
+disable(){
+  sed -i '/run_client.sh start/d' /etc/rc.d/rc.local
+  chmod -x /etc/rc.d/rc.local
+}
  
 #根据输入参数，选择执行对应方法，不输入则执行使用说明
 case "$1" in
@@ -70,6 +87,12 @@ case "$1" in
     ;;
   "restart")
     restart
+    ;;
+  "enable")
+    enable
+    ;;
+  "disable")
+    disable
     ;;
   *)
     usage
