@@ -5,7 +5,7 @@ import requests
 import traceback
 from lib.config import settings
 from lib.log import logger
-
+from lib.config import settings
 # def func():
 #     server_info = {}
 #     for k,v in settings.PLUGIN_ITEMS.items():
@@ -62,14 +62,34 @@ class PluginManager(object):
 
     def exec_cmd(self,cmd):
         if self.mode == "AGENT":
-            # py3
-            if sys.version_info.major == 3 :
-                import subprocess
-                result = subprocess.getoutput(cmd)
-            else :
-            # py2
-                import commands
-                result = commands.getoutput(cmd)
+            import subprocess,time
+            timeout = settings.SHELL_TIME_OUT
+            """执行命令cmd，返回命令输出的内容。
+            如果超时将会抛出TimeoutError异常。
+            cmd - 要执行的命令
+            timeout - 最长等待时间，单位：秒
+            """
+            p = subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, shell=True)
+            t_beginning = time.time()
+            seconds_passed = 0
+            while True:
+                if p.poll() is not None:
+                    break
+                seconds_passed = time.time() - t_beginning
+                if timeout and seconds_passed > timeout:
+                    p.terminate()
+                    raise TimeoutError(cmd, timeout)
+                time.sleep(0.1)
+            result =  p.stdout.read().decode('utf-8').strip()
+
+            # # py3
+            # if sys.version_info.major == 3 :
+            #     import subprocess
+            #     result = subprocess.getoutput(cmd)
+            # else :
+            # # py2
+            #     import commands
+            #     result = commands.getoutput(cmd)
         elif self.mode == "SSH":
             import paramiko
             ssh = paramiko.SSHClient()

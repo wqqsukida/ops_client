@@ -28,6 +28,8 @@ NVME_TOOL_PATH = os.path.join(BASEDIR,'nvme_tool')
 # SSH_PORT = 22
 # SSH_PWD = "sdf"
 
-CLIENT_VERSION = "v0.1.1"
+CLIENT_VERSION = "v0.1.2"
 
 LOG_FILE_PATH = os.path.join(BASEDIR,'log')
+
+SHELL_TIME_OUT = 5  #获取主机信息命令超时时间

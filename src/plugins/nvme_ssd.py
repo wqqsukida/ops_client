@@ -13,9 +13,10 @@ class Nvme_ssd(BasePlugin):
         else:
             nvme_path = os.path.join(settings.NVME_TOOL_PATH,'nvme')
             output = cmd_func("sudo {0} list".format(nvme_path))
-        return self.parse(output)
 
-    def parse(self,content):
+        return self.parse(output,cmd_func)
+
+    def parse(self,content,cmd_func):
         """
         解析shell命令返回结果
         :param content: shell 命令结果
@@ -35,12 +36,12 @@ class Nvme_ssd(BasePlugin):
 
             response[row_line.split(" ")[0]] = dict(zip(name_list,val_list))
             # get device smart_log ##################################
-            smart_log = self.smart_log(row_line.split(" ")[0])
+            smart_log = self.smart_log(cmd_func,row_line.split(" ")[0])
             response[row_line.split(" ")[0]]['smart_log'] = smart_log
             #########################################################
         return response
 
-    def smart_log(self,device,task_id=None):
+    def smart_log(self,cmd_func,device,task_id=None):
         '''
         cmd : nvme smart-log device
         :param device:
@@ -48,14 +49,15 @@ class Nvme_ssd(BasePlugin):
         '''
         response = {}
         nvme_path = os.path.join(settings.NVME_TOOL_PATH, 'nvme')
-        if sys.version_info.major == 2 :
-        # py2
-            import commands
-            output = commands.getoutput("sudo {0} smart-log {1}".format(nvme_path,device))
-        # py3
-        else:
-            import subprocess
-            output = subprocess.getoutput("sudo {0} smart-log {1}".format(nvme_path,device))
+        output = cmd_func("sudo {0} smart-log {1}".format(nvme_path,device))
+        # if sys.version_info.major == 2 :
+        # # py2
+        #     import commands
+        #     output = commands.getoutput("sudo {0} smart-log {1}".format(nvme_path,device))
+        # # py3
+        # else:
+        #     import subprocess
+        #     output = subprocess.getoutput("sudo {0} smart-log {1}".format(nvme_path,device))
         for row_line in output.split('\n')[1:]:
             k = row_line.split(":")[0].strip() # .replace(' ','_').lower()
             response[k] = row_line.split(":")[1].strip()
