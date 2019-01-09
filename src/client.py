@@ -34,8 +34,9 @@ class BaseClient(object):
     def __init__(self):
         self.api = settings.API
         self.task_api = settings.TASK_API
+        self.utask_api = settings.UTASK_API
         self.api_token = settings.API_TOKEN
-        self.task_res_path = os.path.join(settings.BASEDIR,'task_handler/res/res.json')
+        # self.task_res_path = os.path.join(settings.BASEDIR,'task_handler/res/res.json')
         # 获取主机名
         # cert_path = os.path.join(settings.BASEDIR, 'conf', 'cert.txt')
         # f = open(cert_path, mode='r')
@@ -48,6 +49,11 @@ class BaseClient(object):
         try:
             response = requests.post(self.api,json=server_dict,headers={'auth-token':self.auth_header_val})
             # 1. 字典序列化；2. 带请求头 content-type:   application/json
+            print_info = '[%s]POST %s to server' % (
+            datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), '[ client info ]')
+            print(print_info)
+            logger.info(print_info)
+            # 获得返回结果
             rep = json.loads(response.text)
             return rep
         except requests.ConnectionError as e :
@@ -97,11 +103,26 @@ class AgentClient(BaseClient):
             with open(cert_path,mode='w') as ff:
                 ff.write(str(cert_id))
         server_dict['cert'] = cert_id
-        print_info = '[%s]POST %s to server'%(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),'[ client info ]')
-        print(print_info)
-        logger.info(print_info)
+
         # 将client端信息发送给server
         rep = self.post_server_info(server_dict)
+        # 检查是否有升级任务
+        update_task = rep.get('utask',None)
+        if update_task:
+            self.check_utask(update_task)
+
+    def check_utask(self,update_task):
+        ''''''
+        from task_handler.update import RunUpdate
+        ut_obj = RunUpdate(
+            utask_id=update_task['utask_id'],
+            sn=update_task['sn'],
+            img_type=update_task['img_type'],
+            download_url=update_task['download_url'],
+            args_str=update_task['args_str']
+        )
+        p = Process(target=ut_obj.utask_process)
+        p.start()
 
     def check_task(self):
         from task_handler.progress import get_res
