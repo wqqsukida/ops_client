@@ -13,3 +13,4 @@ def start():
         raise Exception('模式仅支持：AGENT/SSH/SALT')
     obj.exe()
     obj.check_task()
+    obj.check_utask()

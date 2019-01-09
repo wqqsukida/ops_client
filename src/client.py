@@ -36,21 +36,28 @@ class BaseClient(object):
         self.task_api = settings.TASK_API
         self.utask_api = settings.UTASK_API
         self.api_token = settings.API_TOKEN
-        # self.task_res_path = os.path.join(settings.BASEDIR,'task_handler/res/res.json')
-        # 获取主机名
-        # cert_path = os.path.join(settings.BASEDIR, 'conf', 'cert.txt')
-        # f = open(cert_path, mode='r')
-        # hostname = f.read()
-        # f.close()
-        # self.hostname = hostname
+        self.task_res_path = os.path.join(settings.BASEDIR,'task_handler/res/res.json')
+        # 获取cert_id
+        cert_path = os.path.join(settings.BASEDIR,'conf','cert.txt')
+        f = open(cert_path,mode='r')
+        cert_id = f.read()
+        f.close()
+        if not cert_id:
+            """第一次运行,生成唯一标示"""
+            cert_id = str(uuid.uuid1())
+            with open(cert_path,mode='w') as ff:
+                ff.write(str(cert_id))
+        self.cert_id = cert_id
 
-    def post_server_info(self,server_dict):
-        # requests.post(self.api,data=server_dict) # 1. k=v&k=v,   2.  content-type:   application/x-www-form-urlencoded
+    def post_info(self,data,api,res_str):
         try:
-            response = requests.post(self.api,json=server_dict,headers={'auth-token':self.auth_header_val})
+            response = requests.post(api,json=data,headers={'auth-token':self.auth_header_val})
             # 1. 字典序列化；2. 带请求头 content-type:   application/json
-            print_info = '[%s]POST %s to server' % (
-            datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), '[ client info ]')
+            print_info = '[{date_time}]POST {res_str}:{data} to server'.format(
+                date_time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                res_str=res_str,
+                data=data
+            )
             print(print_info)
             logger.info(print_info)
             # 获得返回结果
@@ -88,74 +95,60 @@ class BaseClient(object):
 class AgentClient(BaseClient):
 
     def exe(self):
+        '''
+        执行上报client硬件信息
+        :return:
+        '''
         obj = PluginManager()
         server_dict = obj.exec_plugin()
-        new_hostname = server_dict['basic']['data']['hostname']
-        cert_path = os.path.join(settings.BASEDIR,'conf','cert.txt')
-
-        f = open(cert_path,mode='r')
-        cert_id = f.read()
-        f.close()
-
-        if not cert_id:
-            """第一次运行,生成唯一标示"""
-            cert_id = str(uuid.uuid1())
-            with open(cert_path,mode='w') as ff:
-                ff.write(str(cert_id))
-        server_dict['cert'] = cert_id
-
+        server_dict['cert'] = self.cert_id
         # 将client端信息发送给server
-        rep = self.post_server_info(server_dict)
-        # 检查是否有升级任务
-        update_task = rep.get('utask',None)
-        if update_task:
-            self.check_utask(update_task)
+        rep = self.post_info(server_dict,self.api,'Client_Info')
 
-    def check_utask(self,update_task):
-        ''''''
-        from task_handler.update import RunUpdate
-        ut_obj = RunUpdate(
-            utask_id=update_task['utask_id'],
-            sn=update_task['sn'],
-            img_type=update_task['img_type'],
-            download_url=update_task['download_url'],
-            args_str=update_task['args_str']
-        )
-        p = Process(target=ut_obj.utask_process)
-        p.start()
+    def check_utask(self):
+        '''
+        执行上报firmware升级结果
+        :return:
+        '''
+        # 1.检查升级任务结果文件
+        with open(self.task_res_path, 'r') as f:
+            res_json = json.load(f)
+        utask_res = {"cert_id": self.cert_id, "res": {}}
+        '''1:新任务 2:执行完成 3:执行失败 4:执行暂停 5:执行中'''
+        if res_json.get("status_code") == 2 or res_json.get("status_code") == 3:
+            utask_res["res"] = res_json
+            json.dump({}, open(self.task_res_path, 'w'))
+        # 2.发送升级结果给server
+        rep = self.post_info(utask_res,self.utask_api,'Update_Res')
+        # 3.查询server端返回结果是否有升级任务要执行
+        update_task = rep.get('utask')
+        # 4.开启进程执行升级任务
+        if update_task:
+            from task_handler.update import RunUpdate
+            ut_obj = RunUpdate(
+                utask_id=update_task['utask_id'],
+                sn=update_task['sn'],
+                img_type=update_task['img_type'],
+                download_url=update_task['download_url'],
+                args_str=update_task['args_str']
+            )
+            p = Process(target=ut_obj.utask_process)
+            p.start()
 
     def check_task(self):
+        '''
+        执行上报client任务状态
+        :return:
+        '''
+        # 1.执行返回任务状态脚本
         from task_handler.progress import get_res
         task_res = {'cert_id':'','task_res':{}}
         task_res['task_res'] = get_res()
-        cert_path = os.path.join(settings.BASEDIR, 'conf', 'cert.txt')
-        f = open(cert_path,mode='r')
-        cert_id = f.read()
-        f.close()
-        task_res['cert_id'] = cert_id
+        task_res['cert_id'] = self.cert_id
+        # 2.发送任务状态到server
+        rep = self.post_info(task_res,self.task_api,"Task_Res")
 
-
-        print_info = '[%s]POST Task_res:%s to server' % (
-        datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), task_res)
-        logger.info(print_info)
-        print(print_info)
-        try:
-            response = requests.post(self.task_api, json=task_res, headers={'auth-token': self.auth_header_val})
-            rep = json.loads(response.text)
-            return rep
-        except requests.ConnectionError as e:
-            msg = traceback.format_exc()
-            logger.error(msg)
-            rep = {'code': 3, 'msg': msg}
-            print (rep)
-            return rep
-        except ValueError as e:
-            msg = traceback.format_exc()
-            logger.error(msg)
-            rep = {'code': 3, 'msg': msg}
-            print (rep)
-            return rep
-
+        return rep
 
 class SaltSshClient(BaseClient):
     pass

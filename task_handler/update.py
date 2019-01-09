@@ -51,48 +51,30 @@ class RunUpdate(client.BaseClient):
             msg = traceback.format_exc()
             utask_res["message"] = msg
             logger.error(msg)
-        self.post_res_json(utask_res)
+        json.dump(utask_res, open(self.task_res_path, 'w'))
+
 
     def get_img(self):
-        file_obj = requests.get(self.download_url)
-        md5_str = self.download_url.split('fid=')[1]
-        file_name = file_obj.headers['Content-Disposition'].split('filename=')[1]
-        file_path = os.path.join(settings.BASEDIR, 'image_file',self.img_type)
-        if not os.path.exists(file_path):
-            os.makedirs(file_path)
-        img_path = os.path.join(file_path,file_name)
-        with open(img_path, "wb") as f:
-            f.write(file_obj.content)
-        f.close()
-        img_md5_str = self.match(img_path)
-        if img_md5_str != md5_str:
-            self.get_img()
+        try:
+            file_obj = requests.get(self.download_url)
+            md5_str = self.download_url.split('fid=')[1]
+            file_name = file_obj.headers['Content-Disposition'].split('filename=')[1]
+            file_path = os.path.join(settings.BASEDIR, 'image_file',self.img_type)
+            if not os.path.exists(file_path):
+                os.makedirs(file_path)
+            img_path = os.path.join(file_path,file_name)
+            with open(img_path, "wb") as f:
+                f.write(file_obj.content)
+            f.close()
+            img_md5_str = self.match(img_path)
+            if img_md5_str != md5_str:
+                self.get_img()
+        except Exception as e:
+            msg = traceback.format_exc()
+            logger.error(msg)
+            img_path = ''
 
         return img_path
-
-    def post_res_json(self,utask_res):
-        try:
-            response = requests.post(self.utask_api,json=utask_res,headers={'auth-token':self.auth_header_val})
-            # 1. 字典序列化；2. 带请求头 content-type:   application/json
-            print_info = '[%s]POST Update_res:%s to server' % (
-            datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), utask_res)
-            print(print_info)
-            logger.info(print_info)
-            # 获得返回结果
-            rep = json.loads(response.text)
-            return rep
-        except requests.ConnectionError as e :
-            msg = traceback.format_exc()
-            rep = { 'code': 3, 'msg':msg}
-            logger.error(msg)
-            print (rep)
-            return rep
-        except ValueError as e :
-            msg = traceback.format_exc()
-            rep = { 'code': 3, 'msg':msg}
-            logger.error(msg)
-            print (rep)
-            return rep
 
     def match(self,file_path, Bytes=1024):
         md5_1 = hashlib.md5()  # 创建一个md5算法对象
