@@ -53,7 +53,7 @@ class BaseClient(object):
         try:
             response = requests.post(api,json=data,headers={'auth-token':self.auth_header_val})
             # 1. 字典序列化；2. 带请求头 content-type:   application/json
-            print_info = '[{date_time}]POST {res_str}:{data} to server'.format(
+            print_info = '[{date_time}]POST[{res_str}]:{data} to server'.format(
                 date_time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 res_str=res_str,
                 data=data
@@ -101,7 +101,7 @@ class AgentClient(BaseClient):
         '''
         obj = PluginManager()
         server_dict = obj.exec_plugin()
-        server_dict['cert'] = self.cert_id
+        server_dict['cert_id'] = self.cert_id
         # 将client端信息发送给server
         rep = self.post_info(server_dict,self.api,'Client_Info')
 
@@ -113,10 +113,10 @@ class AgentClient(BaseClient):
         # 1.检查升级任务结果文件
         with open(self.task_res_path, 'r') as f:
             res_json = json.load(f)
-        utask_res = {"cert_id": self.cert_id, "res": {}}
+        utask_res = {"cert_id": self.cert_id, "update_res": {}}
         '''1:新任务 2:执行完成 3:执行失败 4:执行暂停 5:执行中'''
         if res_json.get("status_code") == 2 or res_json.get("status_code") == 3:
-            utask_res["res"] = res_json
+            utask_res["update_res"] = res_json
             json.dump({}, open(self.task_res_path, 'w'))
         # 2.发送升级结果给server
         rep = self.post_info(utask_res,self.utask_api,'Update_Res')
