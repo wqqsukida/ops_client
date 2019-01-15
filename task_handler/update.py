@@ -25,15 +25,15 @@ class RunUpdate(client.BaseClient):
         self.download_url = download_url
         self.args_str = args_str
         self.cmd_file = os.path.join(settings.NVME_TOOL_PATH,'nvme_update.sh')
-        self.img_file = self.get_img()
 
     def utask_process(self):
         utask_res = {"utask_id": self.utask_id, "status_code": 5,
                      "run_time": "", "message": "",}
         start_time = datetime.datetime.now()
         try:
+            img_file = self.get_img()  # 获取img文件
             res = subprocess.Popen(
-                'sudo sh {update_cmd} -t {sn} -f {img_file}'.format(update_cmd=self.cmd_file,sn=self.sn, img_file=self.img_file),
+                'sudo sh {update_cmd} -t {sn} -f {img_file}'.format(update_cmd=self.cmd_file,sn=self.sn, img_file=img_file),
                 shell=True,
                 stdout=subprocess.PIPE
             )
@@ -55,24 +55,20 @@ class RunUpdate(client.BaseClient):
 
 
     def get_img(self):
-        try:
-            file_obj = requests.get(self.download_url)
-            md5_str = self.download_url.split('fid=')[1]
-            file_name = file_obj.headers['Content-Disposition'].split('filename=')[1]
-            file_path = os.path.join(settings.BASEDIR, 'image_file',self.img_type)
-            if not os.path.exists(file_path):
-                os.makedirs(file_path)
-            img_path = os.path.join(file_path,file_name)
-            with open(img_path, "wb") as f:
-                f.write(file_obj.content)
-            f.close()
-            img_md5_str = self.match(img_path)
-            if img_md5_str != md5_str:
-                self.get_img()
-        except Exception as e:
-            msg = traceback.format_exc()
-            logger.error(msg)
-            img_path = ''
+
+        file_obj = requests.get(self.download_url)
+        md5_str = self.download_url.split('fid=')[1]
+        file_name = file_obj.headers['Content-Disposition'].split('filename=')[1]
+        file_path = os.path.join(settings.BASEDIR, 'image_file',self.img_type)
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
+        img_path = os.path.join(file_path,file_name)
+        with open(img_path, "wb") as f:
+            f.write(file_obj.content)
+        f.close()
+        img_md5_str = self.match(img_path)
+        if img_md5_str != md5_str:
+            self.get_img()
 
         return img_path
 
