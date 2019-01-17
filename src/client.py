@@ -127,7 +127,7 @@ class AgentClient(BaseClient):
             from task_handler.update import RunUpdate
             ut_obj = RunUpdate(
                 utask_id=update_task['utask_id'],
-                sn=update_task['sn'],
+                node=update_task['node'],
                 img_type=update_task['img_type'],
                 download_url=update_task['download_url'],
                 args_str=update_task['args_str']

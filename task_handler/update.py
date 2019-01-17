@@ -17,14 +17,14 @@ import traceback
 import hashlib
 
 class RunUpdate(client.BaseClient):
-    def __init__(self, utask_id, sn, img_type, download_url, args_str):
+    def __init__(self, utask_id, node, img_type, download_url, args_str):
         super(RunUpdate, self).__init__()
         self.utask_id = utask_id
-        self.sn = sn
+        self.node = node
         self.img_type = img_type
         self.download_url = download_url
         self.args_str = args_str
-        self.cmd_file = os.path.join(settings.NVME_TOOL_PATH,'nvme_update.sh')
+        self.cmd_file = os.path.join(settings.NVME_TOOL_PATH,'nvme')
 
     def utask_process(self):
         utask_res = {"utask_id": self.utask_id, "status_code": 5,
@@ -33,16 +33,20 @@ class RunUpdate(client.BaseClient):
         try:
             img_file = self.get_img()  # 获取img文件
             res = subprocess.Popen(
-                'sudo sh {update_cmd} -t {sn} -f {img_file}'.format(update_cmd=self.cmd_file,sn=self.sn, img_file=img_file),
+                'sudo {update_cmd} dera update-fw {node} -f {img_file} -y 2>&1'.format(update_cmd=self.cmd_file,node=self.node, img_file=img_file),
                 shell=True,
                 stdout=subprocess.PIPE
             )
             res.wait()
+            res_stdout = res.stdout.read().decode('utf-8')
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             utask_res["run_time"] = str(run_time)
-            utask_res["status_code"] = 2
-            utask_res["message"] = res.stdout.read().decode('utf-8')
+            if 'success' in res_stdout:
+                utask_res["status_code"] = 2
+            else:
+                utask_res["status_code"] = 3
+            utask_res["message"] = res_stdout
         except Exception as e:
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
