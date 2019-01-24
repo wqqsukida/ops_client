@@ -27,7 +27,7 @@ NVME_TOOL_PATH = os.path.join(BASEDIR,'nvme_tool')
 # SSH_PORT = 22
 # SSH_PWD = "sdf"
 
-CLIENT_VERSION = "v0.1.5"
+CLIENT_VERSION = "v0.1.6"
 
 LOG_FILE_PATH = os.path.join(BASEDIR,'log')
 

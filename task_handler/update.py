@@ -33,7 +33,12 @@ class RunUpdate(client.BaseClient):
         try:
             img_file = self.get_img()  # 获取img文件
             res = subprocess.Popen(
-                'sudo {update_cmd} dera update-fw {node} -f {img_file} -y 2>&1'.format(update_cmd=self.cmd_file,node=self.node, img_file=img_file),
+                'sudo {update_cmd} dera update-fw {node} -f {img_file} -y 2>&1'.
+                format(
+                    update_cmd=self.cmd_file,
+                    node=self.node,
+                    img_file=img_file
+                ),
                 shell=True,
                 stdout=subprocess.PIPE
             )
