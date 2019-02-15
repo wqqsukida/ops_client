@@ -47,7 +47,7 @@ class RunUpdate(client.BaseClient):
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             utask_res["run_time"] = str(run_time)
-            if 'success' in res_stdout:
+            if 'Success' in res_stdout:
                 utask_res["status_code"] = 2
             else:
                 utask_res["status_code"] = 3
