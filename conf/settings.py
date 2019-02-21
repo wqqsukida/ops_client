@@ -13,9 +13,9 @@ PLUGIN_ITEMS = {
 }
 
 API_TOKEN = "7d6766a6s5f76safas657889hj78kf90"
-API = "http://10.0.7.69/api/server/"
-TASK_API = "http://10.0.7.69/api/task/"
-UTASK_API = "http://10.0.7.69/api/utask/"
+API = "http://10.0.2.20/api/server/"
+TASK_API = "http://10.0.2.20/api/task/"
+UTASK_API = "http://10.0.2.20/api/utask/"
 
 TEST = False
 
@@ -27,7 +27,7 @@ NVME_TOOL_PATH = os.path.join(BASEDIR,'nvme_tool')
 # SSH_PORT = 22
 # SSH_PWD = "sdf"
 
-CLIENT_VERSION = "v0.1.7"
+CLIENT_VERSION = "v0.1.8"
 
 LOG_FILE_PATH = os.path.join(BASEDIR,'log')
 
