@@ -144,7 +144,11 @@ class AgentClient(BaseClient):
         # 1.执行返回任务状态脚本
         from task_handler.progress import get_res
         task_res = {'cert_id':'','task_res':{}}
-        task_res['task_res'] = get_res()
+        try:
+            task_res['task_res'] = get_res()
+        except Exception as e:
+            task_res['task_res']['msg'] = 'Run progress.py error!'
+            task_res['task_res']['status'] = 2
         task_res['cert_id'] = self.cert_id
         # 2.发送任务状态到server
         rep = self.post_info(task_res,self.task_api,"Task_Res")
