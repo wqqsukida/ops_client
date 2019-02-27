@@ -51,7 +51,7 @@ class BaseClient(object):
 
     def post_info(self,data,api,res_str):
         try:
-            response = requests.post(api,json=data,headers={'auth-token':self.auth_header_val})
+            response = requests.post(api,data=json.dumps(data),headers={'auth-token':self.auth_header_val})
             # 1. 字典序列化；2. 带请求头 content-type:   application/json
             if res_str == 'Client_Info':data = {'Client_Info':'....'}
             print_info = '[{date_time}]POST[{res_str}]:{data} to server'.format(
