@@ -3,33 +3,15 @@
 # Author  : wuyifei
 # Data    : 12/3/18 9:43 AM
 # FileName: progress.py
-import time
-'''
-res = {
-
-    "name": "test.py",
-
-    "path": "/tmp/test.py",
-
-    "args": "-t 10 -d 4",
-
-    "status": 0,
-
-    "msg": "some desc",
-
-    "elapsed": 40
-
-}
-'''
-
+import re
+res = {}
 def get_res():
-    res = {
-        "name": "test.py",
-        "path": "/tmp/test.py",
-        "args": "-t 10 -d 4",
-        "status": 0,
-        "msg": "some desc",
-        "elapsed": 40
-               }
 
+    with open('/tmp/host_task.results', 'r') as f:
+        for line in f.readlines():
+            m = re.search('(\w+)\s+:\s+(\S+.*)', line)
+            if m:
+                name = str(m.group(1))
+                value = m.group(2)
+                res[name] = value
     return res
