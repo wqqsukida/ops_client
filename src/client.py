@@ -145,13 +145,23 @@ class AgentClient(BaseClient):
         # 1.执行返回任务状态脚本
         from task_handler.progress import get_res
         task_res = {'cert_id':self.cert_id,'stask_res':{}}
-        if get_res().get('status') == 2 or get_res().get('status') == 3:  #查看当前任务运行状态2:完成,3:错误
+        try:
+            # 查看当前任务运行状态0:IDLE,3:ERROR,5:RUNNING
+            if get_res().get('status') == 0 or get_res().get('status') == 3:
+                with open(self.tid_path, 'r') as f:
+                    tid = json.load(f).get('id')
+                if tid:   #如果存在正在执行的任务,则
+                    task_res['stask_id'] = tid
+                    json.dump({}, open(self.tid_path, 'w'))
+            task_res['stask_res'] = get_res()
+        except Exception as e:
+            task_res['stask_res']['msg'] = 'Run progress.py error!'
+            task_res['stask_res']['status'] = 3
             with open(self.tid_path, 'r') as f:
                 tid = json.load(f).get('id')
-            if tid:   #如果存在正在执行的任务
+            if tid:  # 如果存在正在执行的任务
                 task_res['stask_id'] = tid
                 json.dump({}, open(self.tid_path, 'w'))
-        task_res['stask_res'] = get_res()
         # 2.发送任务状态到server
         rep = self.post_info(task_res,self.task_api,"Task_Res")
         # 3.查询server端返回结果是否有任务要执行
