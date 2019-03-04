@@ -147,8 +147,8 @@ class AgentClient(BaseClient):
         try:
             task_res['task_res'] = get_res()
         except Exception as e:
-            task_res['task_res']['msg'] = 'Run progress.py error!'
-            task_res['task_res']['status'] = 2
+            task_res['task_res']['msg'] = 'Run progress.py error or can`t find task script'
+            task_res['task_res']['status'] = 3
         task_res['cert_id'] = self.cert_id
         # 2.发送任务状态到server
         rep = self.post_info(task_res,self.task_api,"Task_Res")
