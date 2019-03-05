@@ -147,7 +147,7 @@ class AgentClient(BaseClient):
         task_res = {'cert_id':self.cert_id,'stask_res':{}}
         try:
             # 查看当前任务运行状态0:IDLE,3:ERROR,5:RUNNING
-            if get_res().get('status') == 0 or get_res().get('status') == 3:
+            if get_res().get('status') == '0' or get_res().get('status') == '3':
                 with open(self.tid_path, 'r') as f:
                     tid = json.load(f).get('id')
                 if tid:   #如果存在正在执行的任务,则
@@ -155,8 +155,8 @@ class AgentClient(BaseClient):
                     json.dump({}, open(self.tid_path, 'w'))
             task_res['stask_res'] = get_res()
         except Exception as e:
-            task_res['stask_res']['msg'] = 'Run progress.py error!'
-            task_res['stask_res']['status'] = 3
+            task_res['stask_res']['msg'] = 'Run progress.py error or can`t find task script'
+            task_res['stask_res']['status'] = '3'
             with open(self.tid_path, 'r') as f:
                 tid = json.load(f).get('id')
             if tid:  # 如果存在正在执行的任务
@@ -174,7 +174,8 @@ class AgentClient(BaseClient):
                 stask_id=server_task['stask_id'],
                 name=server_task['name'],
                 path=server_task['path'],
-                args_str=server_task['args_str']
+                args_str=server_task['args_str'],
+                download_url=server_task['download_url'],
             )
             p = Process(target=t_obj.task_process)
             p.start()

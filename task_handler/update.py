@@ -60,7 +60,7 @@ class RunUpdate(client.BaseClient):
             msg = traceback.format_exc()
             utask_res["message"] = msg
             logger.error(msg)
-        json.dump(utask_res, open(self.task_res_path, 'w'))
+        json.dump(utask_res, open(self.utask_res_path, 'w'))
 
 
     def get_img(self):
