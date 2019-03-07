@@ -36,7 +36,8 @@ class BaseClient(object):
         self.task_api = settings.TASK_API
         self.utask_api = settings.UTASK_API
         self.api_token = settings.API_TOKEN
-        self.task_res_path = os.path.join(settings.BASEDIR,'task_handler/res/res.json')
+        self.utask_res_path = os.path.join(settings.BASEDIR,'task_handler/res/res.json')
+        self.tid_path = os.path.join(settings.BASEDIR,'task_handler/res/tid.json')
         # 获取cert_id
         cert_path = os.path.join(settings.BASEDIR,'conf','cert.txt')
         f = open(cert_path,mode='r')
@@ -112,13 +113,13 @@ class AgentClient(BaseClient):
         :return:
         '''
         # 1.检查升级任务结果文件
-        with open(self.task_res_path, 'r') as f:
+        with open(self.utask_res_path, 'r') as f:
             res_json = json.load(f)
         utask_res = {"cert_id": self.cert_id, "update_res": {}}
         '''1:新任务 2:执行完成 3:执行失败 4:执行暂停 5:执行中'''
         if res_json.get("status_code") == 2 or res_json.get("status_code") == 3:
             utask_res["update_res"] = res_json
-            json.dump({}, open(self.task_res_path, 'w'))
+            json.dump({}, open(self.utask_res_path, 'w'))
         # 2.发送升级结果给server
         rep = self.post_info(utask_res,self.utask_api,'Update_Res')
         # 3.查询server端返回结果是否有升级任务要执行
@@ -145,15 +146,39 @@ class AgentClient(BaseClient):
         from task_handler.progress import get_res
         task_res = {'cert_id':'','task_res':{}}
         try:
-            task_res['task_res'] = get_res()
+            # 查看当前任务运行状态0:IDLE,3:ERROR,5:RUNNING
+            if get_res().get('status') == '0' or get_res().get('status') == '3':
+                with open(self.tid_path, 'r') as f:
+                    tid = json.load(f).get('id')
+                if tid:   #如果存在正在执行的任务,则
+                    task_res['stask_id'] = tid
+                    json.dump({}, open(self.tid_path, 'w'))
+            task_res['stask_res'] = get_res()
         except Exception as e:
-            task_res['task_res']['msg'] = 'Run progress.py error or can`t find task script'
-            task_res['task_res']['status'] = 3
-        task_res['cert_id'] = self.cert_id
+            task_res['stask_res']['msg'] = 'Run progress.py error or can`t find task script'
+            task_res['stask_res']['status'] = '3'
+            with open(self.tid_path, 'r') as f:
+                tid = json.load(f).get('id')
+            if tid:  # 如果存在正在执行的任务
+                task_res['stask_id'] = tid
+                json.dump({}, open(self.tid_path, 'w'))
         # 2.发送任务状态到server
         rep = self.post_info(task_res,self.task_api,"Task_Res")
+        # 3.查询server端返回结果是否有任务要执行
+        server_task = rep.get('stask')
+        # 4.开启进程执行升级任务
+        if server_task:
+            from task_handler.runtask import RunTask
+            t_obj = RunTask(
 
-        return rep
+                stask_id=server_task['stask_id'],
+                name=server_task['name'],
+                path=server_task['path'],
+                args_str=server_task['args_str'],
+                download_url=server_task['download_url'],
+            )
+            p = Process(target=t_obj.task_process)
+            p.start()
 
 class SaltSshClient(BaseClient):
     pass
