@@ -42,6 +42,16 @@ class RunTask(client.BaseClient):
             msg = traceback.format_exc()
             logger.error(msg)
 
+        from task_handler.progress import get_res
+        if not get_res().get('status') == '5':  #如果脚本没有生成host_task.results文件
+            with open('/tmp/host_task.results', 'w') as f:
+                f.write('args                  : %s\n' % self.args_str)
+                f.write('elapsed               : %s\n' % '0')
+                f.write('msg                   : %s\n' % 'this script doesn`t generate a host_task.results file!')
+                f.write('name                  : %s\n' % self.name)
+                f.write('path                  : %s\n' % self.path)
+                f.write('status                : %d\n' % 3)
+
         json.dump(tid, open(self.tid_path, 'w'))
 
     def get_script(self):
