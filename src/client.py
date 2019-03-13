@@ -144,7 +144,7 @@ class AgentClient(BaseClient):
         '''
         # 1.执行返回任务状态脚本
         from task_handler.progress import get_res
-        task_res = {'cert_id':self.cert_id,'task_res':{}}
+        task_res = {'cert_id':self.cert_id,'stask_res':{}}
         try:
             # 查看当前任务运行状态0:IDLE,3:ERROR,5:RUNNING
             if get_res().get('status') == '0' or get_res().get('status') == '3':
