@@ -6,6 +6,11 @@
 import logging
 import os
 from lib.config import settings
+import sys
+
+if sys.version.startswith('2'):
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
 
 class Logger(object):
     def __init__(self):
