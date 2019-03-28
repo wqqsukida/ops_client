@@ -146,8 +146,9 @@ class AgentClient(BaseClient):
         from task_handler.progress import get_res
         task_res = {'cert_id':self.cert_id,'stask_res':{}}
         try:
-            # 查看当前任务运行状态0:IDLE,3:ERROR,5:RUNNING
-            if get_res().get('status') == '0' or get_res().get('status') == '3':
+            # 查看当前任务运行状态0:IDLE,2:FINISH,3:ERROR,5:RUNNING
+            status_code = get_res().get('status')
+            if status_code == '0' or status_code == '2' or status_code == '3':
                 with open(self.tid_path, 'r') as f:
                     tid = json.load(f).get('id')
                 if tid:   #如果存在正在执行的任务,则

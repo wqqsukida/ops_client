@@ -12,7 +12,7 @@ class Nvme_ssd(BasePlugin):
 
         else:
             nvme_path = os.path.join(settings.NVME_TOOL_PATH,'nvme')
-            output = cmd_func("sudo {0} list".format(nvme_path))
+            output = cmd_func("sudo {0} dera info".format(nvme_path))
 
         return self.parse(output,cmd_func)
 
@@ -24,20 +24,21 @@ class Nvme_ssd(BasePlugin):
         """
         response = {}
 
-        name_list = ['node','sn','model','namespace','usage','format','fw_rev']
+        name_list = ['node','sn','model','namespace','capacity','format','fw_rev']
         for row_line in content.split("\n")[2:]:
-            usage_val = re.search('(\d+\.\d+\s*[GT]B\s*/\s*\d+\.\d+\s*[GT]B)', row_line)
-            format_val = re.search('\d+\s*\w*B\s*\+\s*\d+\s*\w*B', row_line)
-            val_list =re.split('\s{2,}',row_line)[0:4]
-            if usage_val and format_val:
-                val_list.append(usage_val.group())
-                val_list.append(format_val.group())
-                val_list.append(row_line.split(" ")[-1])
+            node_val = re.search('/\w+/\w+',row_line)
+            # usage_val = re.search('(\d+\.\d+\s*[GT]B\s*/\s*\d+\.\d+\s*[GT]B)', row_line)
+            # format_val = re.search('\d+\s*\w*B\s*\+\s*\d+\s*\w*B', row_line)
+            val_list =re.split('\s{2,}',row_line)#[0:4]
+            # if usage_val and format_val:
+            #     val_list.append(usage_val.group())
+            #     val_list.append(format_val.group())
+            #     val_list.append(row_line.split(" ")[-1])
 
-            response[row_line.split(" ")[0]] = dict(zip(name_list,val_list))
+            response[node_val.group()] = dict(zip(name_list,val_list))
             # get device smart_log ##################################
             smart_log = self.smart_log(cmd_func,row_line.split(" ")[0])
-            response[row_line.split(" ")[0]]['smart_log'] = smart_log
+            response[node_val.group()]['smart_log'] = smart_log
             #########################################################
         return response
 
