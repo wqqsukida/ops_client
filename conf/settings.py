@@ -13,9 +13,9 @@ PLUGIN_ITEMS = {
 }
 
 API_TOKEN = "7d6766a6s5f76safas657889hj78kf90"
-API = "http://10.0.2.20/api/server/"
-TASK_API = "http://10.0.2.20/api/task/"
-UTASK_API = "http://10.0.2.20/api/utask/"
+API = "http://10.0.7.69/api/server/"
+TASK_API = "http://10.0.7.69/api/task/"
+UTASK_API = "http://10.0.7.69/api/utask/"
 
 TEST = False
 
