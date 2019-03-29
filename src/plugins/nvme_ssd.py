@@ -30,15 +30,16 @@ class Nvme_ssd(BasePlugin):
             # usage_val = re.search('(\d+\.\d+\s*[GT]B\s*/\s*\d+\.\d+\s*[GT]B)', row_line)
             # format_val = re.search('\d+\s*\w*B\s*\+\s*\d+\s*\w*B', row_line)
             val_list =re.split('\s{2,}',row_line)#[0:4]
+            sn_val = val_list[1]
             # if usage_val and format_val:
             #     val_list.append(usage_val.group())
             #     val_list.append(format_val.group())
             #     val_list.append(row_line.split(" ")[-1])
 
-            response[node_val.group()] = dict(zip(name_list,val_list))
+            response[sn_val] = dict(zip(name_list,val_list))
             # get device smart_log ##################################
-            smart_log = self.smart_log(cmd_func,row_line.split(" ")[0])
-            response[node_val.group()]['smart_log'] = smart_log
+            smart_log = self.smart_log(cmd_func,node_val)
+            response[sn_val]['smart_log'] = smart_log
             #########################################################
         return response
 
