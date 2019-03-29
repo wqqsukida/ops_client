@@ -38,7 +38,7 @@ class Nvme_ssd(BasePlugin):
 
             response[sn_val] = dict(zip(name_list,val_list))
             # get device smart_log ##################################
-            smart_log = self.smart_log(cmd_func,node_val)
+            smart_log = self.smart_log(cmd_func,node_val.group())
             response[sn_val]['smart_log'] = smart_log
             #########################################################
         return response
