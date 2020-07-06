@@ -84,9 +84,7 @@ class BaseClient(object):
         new_key = "%s|%s" % (self.api_token, ctime,)  # asdfuasodijfoausfnasdf|时间戳
         hs = hashlib.md5()
         hs.update(new_key.encode('utf-8'))
-        md5_str = hs.hexdigest()
-
-        # 6f800b6a11d3f9c08c77ef8f77b2d460，  # asdfuasodijfoausfnasdf|时间戳
+        md5_str = hs.hexdigest()                       # 6f800b6a11d3f9c08c77ef8f77b2d460
         auth_header_val = "%s|%s" % (md5_str, ctime,)  # 6f800b6a11d3f9c08c77ef8f77b2d460|时间戳
 
         return auth_header_val
